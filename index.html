@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map with Custom Markers</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([46.8182, 8.2275], 8); // Centered on Switzerland
+
+        // Add Swiss Topographic Map Layer
+        var swissTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            maxZoom: 17,
+            attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Define custom marker icon
+        var customIcon = L.icon({
+            iconUrl: 'https://upwork-usw2-prod-agora-file-storage.s3.us-west-2.amazonaws.com/opening-attachments/a0a80b03b26402ffaa3baed4493d532a?response-content-disposition=inline;+filename=%225G-icon-64px.png%22;+filename*=utf-8%27%275G-icon-64px.png&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIn//////////wEaCXVzLXdlc3QtMiJIMEYCIQDgImVHmo6QI73inu%2BxwSIN7reoI1Lgbm0aBHqAAwlFKwIhALvbIxJERxn5HUDNMyaTnMzgN6QOTWKKD%2BmJd/ZW%2BZ1SKs0ECDIQABoMNzM5OTM5MTczODE5IgxLRjLEj8z41QfQCCsqqgR%2BCXpDIr5fF4421G/INGfeCrJw4Pls8Miz%2BxiTyrJ/FmjiO0YZhApIoc5op0%2Be8o%2BJ9PQkY926GNywnrsZhroY4TpbnjRmgNbCtSL/Hn%2B5pfdtU/1Ug5MtKhSSjor3Sd3atjv/KOmHp/DRG/4/c9Mql2GfGhFFIcQXJkweOkWNlVoprj9Rrg0ZmTPMSNfj2bHZpAw5vdpR5OVhSndNkZ637hYiT83zDIQdJfGBfQoGlhiYfWJGIc8MEy1nbNaMaGm%2BFhTET5ncdGyBSEYEx1YRX%2BZq7PX%2B3T6HcCbG6faTwkqG/8GnDKn6T3/0iAKqUm2WPRHGC7nkDEGAdQ%2BEz5RJ2qxPrYA2GplI8h7PZmNtPfqGBa8cAztybTQLl1ApFzPzcBcHEalkqBlciWZG08GGNwSNEM/I4ulG0OYkFrLJta0a9OOL/DBBmuWFEzq%2B7UkaksJoyfDsmR8b369nUSdJz6xpK04fL8Q5Pj9vmtgEW2/XLxoYwLJxKY41XOccvE79rsyNjBuw8XAAwsnyuEppqZlloNfgRSpA0Zx9U%2BCFigHTjx1i%2BU%2B5SrNsubuyyXImgcc7DXAVqE/%2B9r8WYKBXQkwsYnjGvC5W2OSBsr4ONANSOVg9FAc41602/OR1D6leCsKBkN6IGLbjAzau/dEMegiO%2Buty4zZuAqIlGCwTqAUSZld%2BT5RFeZMNi0Hl90OcK3HguPvqT6qm1YLLLNieq/lrm2Cf6LIWDTDrmsyzBjqmAUNd6TUdMn8/2R5gEa%2BVUWQKvquoZP5II0NgP12jReqISYjLao0ypNxO%2BhfGRu4UPznFOoWII0s12gvbgg7g9Puy33%2BLz67OeUTdbk5/gyeem9nWvSYqqEfpb2DBfzM0CB98ITcFgd9bGDZ16SSDu/xuyL1Zpjuw0XQBNT2gdhEVWsgF5PzPc/fTXN1BjYftQGvYNm8soc2qNVrcmb%2BjtMSBSW8xpYo=&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240619T173812Z&X-Amz-SignedHeaders=host&X-Amz-Expires=21599&X-Amz-Credential=ASIA2YR6PYW5TIDKLX7F/20240619/us-west-2/s3/aws4_request&X-Amz-Signature=c435e8b5e2f64a2f0a0d4c80b12cbbe89000cee9f1627aaf75985d88dbbc788f', // Replace with the path to your custom icon
+            iconSize: [32, 32], // size of the icon
+            iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
+            popupAnchor: [0, -32] // point from which the popup should open relative to the iconAnchor
+        });
+
+        // Example Mobile Antenna Data (GeoJSON format) with detailed popup content
+        var antennaGeoJsonData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [8.5417, 47.3769]
+                    },
+                    "properties": {
+                        "name": "Name der Funkstelle Alosen Schwandstr. 15",
+                        "operator": "Swisscom",
+                        "frequency": "2130.3 MHz",
+                        "x": 2690654,
+                        "y": 1221939,
+                        "power": "91.4 W",
+                        "azimuth": "210°",
+                        "horizontalDiagram": "WIEN 031EA03",
+                        "verticalDiagram": "WIEN 003EA50",
+                        "antennaHeight": "15.1 m",
+                        "siteHeight": "906.84 m",
+                        "canton": "ZG",
+                        "operationDate": "11. Nov 20"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [8.5476, 40.3739]
+                    },
+                    "properties": {
+                        "name": "Name der Funkstelle Example 2",
+                        "operator": "Operator Name",
+                        "frequency": "2000 MHz",
+                        "x": 2690700,
+                        "y": 1222000,
+                        "power": "85 W",
+                        "azimuth": "190°",
+                        "horizontalDiagram": "DIAGRAM 2",
+                        "verticalDiagram": "DIAGRAM 2",
+                        "antennaHeight": "20 m",
+                        "siteHeight": "900 m",
+                        "canton": "ZH",
+                        "operationDate": "15. Dec 21"
+                    }
+                }
+            ]
+        };
+
+        var antennaLayer = L.geoJSON(antennaGeoJsonData, {
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng, { icon: customIcon });
+            },
+            onEachFeature: function (feature, layer) {
+                var popupContent = `
+                    <strong>${feature.properties.name}</strong><br>
+                    <strong>Operator:</strong> ${feature.properties.operator}<br>
+                    <strong>Sendefrequenz:</strong> ${feature.properties.frequency}<br>
+                    <strong>X:</strong> ${feature.properties.x}<br>
+                    <strong>Y:</strong> ${feature.properties.y}<br>
+                    <strong>Power:</strong> ${feature.properties.power}<br>
+                    <strong>Azimut:</strong> ${feature.properties.azimuth}<br>
+                    <strong>Horizontaldiagram:</strong> ${feature.properties.horizontalDiagram}<br>
+                    <strong>Verticaldiagram:</strong> ${feature.properties.verticalDiagram}<br>
+                    <strong>Antennenhöhe über Grund:</strong> ${feature.properties.antennaHeight}<br>
+                    <strong>Ortshöhe der Funkstelle ü Meer:</strong> ${feature.properties.siteHeight}<br>
+                    <strong>Kanton:</strong> ${feature.properties.canton}<br>
+                    <strong>Inbetriebnahmedatum:</strong> ${feature.properties.operationDate}<br>
+                `;
+                layer.bindPopup(popupContent);
+            }
+        }).addTo(map);
+
+        // Layer Control
+        var baseMaps = {
+            "Swiss Topographic": swissTopo
+        };
+
+        var overlayMaps = {
+            "Mobile Antenna Data": antennaLayer
+        };
+
+        L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+        // Add search control
+        L.Control.geocoder().addTo(map);
+    </script>
+</body>
+
+</html>
